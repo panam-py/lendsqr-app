@@ -5,7 +5,7 @@ const morgan = require("morgan");
 const userRouter = require("./routes/userRouter");
 const globalAppErrorHandler = require("./controllers/errorController");
 
-// Setting environment variables -- testchange
+// Setting environment variables
 dotenv.config({ path: "./config.env" });
 
 // Initializing application
