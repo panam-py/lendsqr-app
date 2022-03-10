@@ -1,20 +1,16 @@
 const path = require("path");
-const dotenv = require('dotenv')
+const config = require("../config");
 
-
-dotenv.config({ path: "../config.env" });
-
-console.log(process.env.DB_DEV)
 
 module.exports = {
   development: {
     client: "mysql2",
     connection: {
-      host: "localhost",
-      port: 3306,
-      user: "root",
-      password: "password",
-      database: "lendsqr",
+      host: config.DB_DEV_HOST,
+      port: config.DB_DEV_PORT,
+      user: config.DB_DEV_USER,
+      password: config.DB_DEV_PASSWORD,
+      database: config.DB_DEV,
     },
     migrations: {
       directory: path.join(__dirname, "./models/migrations"),
@@ -22,12 +18,10 @@ module.exports = {
   },
   production: {
     client: "pg",
-    connection: process.env.DB_PROD,
+    connection: config.DB_PROD,
     pool: { min: 2, max: 10 },
     migrations: {
       directory: path.join(__dirname, "./models/migrations"),
     },
   },
 };
-
-
