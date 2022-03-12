@@ -10,6 +10,7 @@ router.post("/register", authController.signUp);
 router.post("/login", authController.login);
 router.get("/", userController.getAllUsers);
 router.get("/:userId", userController.getUser);
+router.delete("/", userController.deleteAllUsers);
 
 // Protecting all routes after this line
 router.use(authController.protect);

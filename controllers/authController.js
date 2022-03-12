@@ -1,5 +1,5 @@
 // Necassary Imports
-const db = require("../db/db");
+const database = require("../database/database");
 const bcrypt = require("bcryptjs");
 const utilities = require("../utils/utilities");
 const AppError = require("../utils/appError");
@@ -11,6 +11,7 @@ exports.signUp = async (req, res, next) => {
     const email = req.body.email;
     const name = req.body.name;
     const password = req.body.password;
+    const balance = 0
 
     const hashedPassword = await bcrypt.hash(password, 10); // Hash password
     const id = utilities.createId(16); // Create a unique ID with the utility function
@@ -30,10 +31,11 @@ exports.signUp = async (req, res, next) => {
       id,
       email,
       name,
+      balance,
       password: hashedPassword,
     };
 
-    const user = await db("users").insert(userObj); // Inserting new user into the DB
+    const user = await database("users").insert(userObj); // Inserting new user into the DB
     utilities.createSendToken(userObj, 201, res); // Creating and sending a JsonWebToken in the response
   } catch (err) {
     utilities.catchErrorMessage(res, err); // Sending a dynamic error message if the try block fails
@@ -52,7 +54,7 @@ exports.login = async (req, res, next) => {
       );
     }
 
-    const user = await db("users").first("*").where({ email }); // Querying the DB for the user based on the email given
+    const user = await database("users").first("*").where({ email }); // Querying the DB for the user based on the email given
 
     // Return an error is no user is found with those credentials
     if (!user) {
@@ -98,7 +100,7 @@ exports.protect = async (req, res, next) => {
     const decoded = await utilities.decodeJWT(token); // decoding the JsonWebToken using the utility function for this
     const id = decoded.id; // Extracting id from the decoded token
 
-    const currentUser = await db("users").first("*").where({ id }); // Query the DB for the user gotten based on the ID
+    const currentUser = await database("users").first("*").where({ id }); // Query the DB for the user gotten based on the ID
 
     // Return an error if no user is found based on the ID.
     if (!currentUser) {

@@ -1,11 +1,11 @@
-const db = require("../db/db");
+const database = require("../database/database");
 const utilities = require("../utils/utilities");
 const AppError = require("../utils/appError");
 
 // Controller function to get all users in the DB
 exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await db("users").select(); // Query the DB for all the users present
+    const users = await database("users").select(); // Query the DB for all the users present
 
     // Mapping through the users array to set the password as undefined for security reasons
     users.map((user) => {
@@ -37,7 +37,7 @@ exports.getUser = async (req, res, next) => {
       );
     }
 
-    const user = await db("users").first("*").where({ id: userId }); // Querying the DB for said user using the userId
+    const user = await database("users").first("*").where({ id: userId }); // Querying the DB for said user using the userId
 
     // Returning an error if user is not present in DB
     if (!user) {
@@ -76,8 +76,12 @@ exports.fund = async (req, res, next) => {
     user = req.user; // Collecting logged in user's info from the request object
     newBalance = user.balance + amount; // Setting user's new balance
 
-    await db("users").where({ id: user.id }).update({ balance: newBalance }); // Updating the user in the DB
-    const updatedUser = await db("users").first("*").where({ id: user.id }); // Querying the DB for updated user
+    await database("users")
+      .where({ id: user.id })
+      .update({ balance: newBalance }); // Updating the user in the DB
+    const updatedUser = await database("users")
+      .first("*")
+      .where({ id: user.id }); // Querying the DB for updated user
 
     // Returning a successful response as well as the data required
     res.status(200).json({
@@ -117,8 +121,12 @@ exports.withdraw = async (req, res, next) => {
 
     const newBalance = user.balance - amount; // Setting user's new balance
 
-    await db("users").where({ id: user.id }).update({ balance: newBalance }); // Updating the user in the DB
-    const updatedUser = await db("users").first("*").where({ id: user.id }); // Querying the DB for updated user
+    await database("users")
+      .where({ id: user.id })
+      .update({ balance: newBalance }); // Updating the user in the DB
+    const updatedUser = await database("users")
+      .first("*")
+      .where({ id: user.id }); // Querying the DB for updated user
 
     // Returning a successful response as well as the data required
     res.status(200).json({
@@ -159,7 +167,9 @@ exports.transfer = async (req, res, next) => {
 
     amount = amount * 1; // Returning an error if amount given is not a number
 
-    beneficiary = await db("users").first("*").where({ id: beneficiaryId }); // Querying the DB for the beneficiary's info based on data given
+    beneficiary = await database("users")
+      .first("*")
+      .where({ id: beneficiaryId }); // Querying the DB for the beneficiary's info based on data given
 
     // Returning an error if no beneficiary account is found in the DB
     if (!beneficiary) {
@@ -187,11 +197,13 @@ exports.transfer = async (req, res, next) => {
     //Mapping through each user in the zip array to update and query the DB for the updated user, updated users are also added to eh update array
     await Promise.all(
       zip.map(async (person) => {
-        await db("users")
+        await database("users")
           .where({ id: person.id })
           .update({ balance: person.balance });
 
-        updatedUser = await db("users").first("*").where({ id: person.id });
+        updatedUser = await database("users")
+          .first("*")
+          .where({ id: person.id });
         update.push(updatedUser);
       })
     );
@@ -207,5 +219,17 @@ exports.transfer = async (req, res, next) => {
     });
   } catch (err) {
     utilities.catchErrorMessage(res, err); // Sending a dynamic error message if the try block fails
+  }
+};
+
+exports.deleteAllUsers = async (req, res, next) => {
+  try {
+    await database("users").del();
+
+    res.status(204).json({
+      status: "success",
+    });
+  } catch (err) {
+    utilities.catchErrorMessage(res, err);
   }
 };
